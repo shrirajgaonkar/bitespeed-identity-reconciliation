@@ -8,8 +8,8 @@ datasource db {
 }
 
 enum LinkPrecedence {
-  PRIMARY
-  SECONDARY
+  primary
+  secondary
 }
 
 model Contact {
@@ -17,7 +17,7 @@ model Contact {
   phoneNumber    String?
   email          String?
   linkedId       Int?
-  linkPrecedence LinkPrecedence @default(PRIMARY)
+  linkPrecedence LinkPrecedence @default(primary)
 
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt

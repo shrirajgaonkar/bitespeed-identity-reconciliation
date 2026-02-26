@@ -33,13 +33,13 @@ app.post("/identify", async (req: Request, res: Response) => {
       orderBy: { createdAt: "asc" },
     });
 
-    // Create PRIMARY if no match
+    // ✅ If no match → create primary
     if (matchedContacts.length === 0) {
       const newContact = await prisma.contact.create({
         data: {
           email,
           phoneNumber,
-          linkPrecedence: "PRIMARY",
+          linkPrecedence: "primary",   // ✅ lowercase
         },
       });
 
@@ -53,6 +53,7 @@ app.post("/identify", async (req: Request, res: Response) => {
       });
     }
 
+    // ✅ Fetch related contacts
     const relatedContacts = await prisma.contact.findMany({
       where: {
         OR: [
@@ -65,17 +66,19 @@ app.post("/identify", async (req: Request, res: Response) => {
       orderBy: { createdAt: "asc" },
     });
 
+    // ✅ Find oldest primary
     let primaryContact =
       relatedContacts.find(
         (c: { linkPrecedence: string }) =>
-          c.linkPrecedence === "PRIMARY"
+          c.linkPrecedence === "primary"   // ✅ lowercase
       ) || relatedContacts[0];
 
     const allPrimaries = relatedContacts.filter(
       (c: { linkPrecedence: string }) =>
-        c.linkPrecedence === "PRIMARY"
+        c.linkPrecedence === "primary"
     );
 
+    // ✅ Merge multiple primaries
     if (allPrimaries.length > 1) {
       primaryContact = allPrimaries.sort(
         (a: { createdAt: Date }, b: { createdAt: Date }) =>
@@ -90,13 +93,14 @@ app.post("/identify", async (req: Request, res: Response) => {
         await prisma.contact.update({
           where: { id: p.id },
           data: {
-            linkPrecedence: "SECONDARY",
+            linkPrecedence: "secondary",   // ✅ lowercase
             linkedId: primaryContact.id,
           },
         });
       }
     }
 
+    // ✅ Fetch final linked contacts
     const finalContacts = await prisma.contact.findMany({
       where: {
         OR: [
@@ -127,7 +131,7 @@ app.post("/identify", async (req: Request, res: Response) => {
           email,
           phoneNumber,
           linkedId: primaryContact.id,
-          linkPrecedence: "SECONDARY",
+          linkPrecedence: "secondary",  // ✅ lowercase
         },
       });
 
@@ -147,7 +151,7 @@ app.post("/identify", async (req: Request, res: Response) => {
 
     const secondaryContactIds = updatedContacts
       .filter((c: { linkPrecedence: string }) =>
-        c.linkPrecedence === "SECONDARY"
+        c.linkPrecedence === "secondary"
       )
       .map((c: { id: number }) => c.id);
 
@@ -159,6 +163,7 @@ app.post("/identify", async (req: Request, res: Response) => {
         secondaryContactIds,
       },
     });
+
   } catch (error) {
     console.error("Error in /identify:", error);
     return res.status(500).json({
