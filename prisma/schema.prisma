@@ -8,20 +8,22 @@ datasource db {
 }
 
 enum LinkPrecedence {
-  primary
-  secondary
+  PRIMARY
+  SECONDARY
 }
 
 model Contact {
-  id             Int             @id @default(autoincrement())
+  id             Int            @id @default(autoincrement())
   phoneNumber    String?
   email          String?
   linkedId       Int?
-  linkPrecedence LinkPrecedence  @default(primary)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  linkPrecedence LinkPrecedence @default(PRIMARY)
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   deletedAt      DateTime?
 
   @@index([email])
   @@index([phoneNumber])
+  @@index([linkedId])
 }
